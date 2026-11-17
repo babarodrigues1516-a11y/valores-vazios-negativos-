@@ -1,0 +1,189 @@
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
+
+export default function App() {
+  const [nome, setNome] = useState('');
+  const [matricula, setMatricula] = useState('');
+  const [email, setEmail] = useState('');
+  const [curso, setCurso] = useState('');
+  
+  // Lista de estudantes (array de objetos)
+  const [estudantes, setEstudantes] = useState([
+    { nome: 'Maria Silva', matricula: '20260001', email: 'maria@exemplo.com', curso: 'Licenciatura em Computação' } // Exemplo da imagem
+  ]);
+
+  const cadastrarEstudante = () => {
+    // Validação de campos obrigatórios
+    if (!nome.trim() || !matricula.trim() || !email.trim() || !curso.trim()) {
+      Alert.alert('Erro', 'Por favor, preencha todos os campos obrigatórios.');
+      return;
+    }
+
+    // Requisito: impedir matrícula duplicada
+    const matriculaExistente = estudantes.some(estudante => estudante.matricula === matricula.trim());
+    if (matriculaExistente) {
+      Alert.alert('Erro', 'Já existe um estudante registado com esta matrícula.');
+      return;
+    }
+
+    // Criar objeto do estudante e adicionar ao array
+    const novoEstudante = {
+      nome: nome.trim(),
+      matricula: matricula.trim(),
+      email: email.trim(),
+      curso: curso.trim(),
+    };
+
+    setEstudantes([...estudantes, novoEstudante]);
+
+    // Limpar os campos após o cadastro
+    setNome('');
+    setMatricula('');
+    setEmail('');
+    setCurso('');
+  };
+
+  // Requisito: permitir remoção[cite: 6]
+  const removerEstudante = (matriculaParaRemover) => {
+    const novaLista = estudantes.filter(estudante => estudante.matricula !== matriculaParaRemover);
+    setEstudantes(novaLista);
+  };
+
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.titulo}>Registo de Estudantes</Text>
+
+      <Text style={styles.label}>Nome:</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Ex: Maria Silva"
+        value={nome}
+        onChangeText={setNome}
+      />
+
+      <Text style={styles.label}>Matrícula:</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Ex: 20260001"
+        keyboardType="numeric"
+        value={matricula}
+        onChangeText={setMatricula}
+      />
+
+      <Text style={styles.label}>E-mail:</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Ex: maria@exemplo.com"
+        autoCapitalize="none"
+        value={email}
+        onChangeText={setEmail}
+      />
+
+      <Text style={styles.label}>Curso:</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Ex: Licenciatura em Computação"
+        value={curso}
+        onChangeText={setCurso}
+      />
+
+      <TouchableOpacity style={styles.botaoCadastrar} onPress={cadastrarEstudante}>
+        <Text style={styles.textoBotao}>Cadastrar Estudante</Text>
+      </TouchableOpacity>
+
+      <Text style={styles.subtituloLista}>Estudantes Cadastrados ({estudantes.length})</Text>
+
+      {/* Requisito: exibir cards com map()[cite: 6] */}
+      {estudantes.map((estudante) => (
+        <View key={estudante.matricula} style={styles.card}>
+          <Text style={styles.cardTexto}>Nome: <Text style={styles.negrito}>{estudante.nome}</Text></Text>
+          <Text style={styles.cardTexto}>Matrícula: <Text style={styles.negrito}>{estudante.matricula}</Text></Text>
+          <Text style={styles.cardTexto}>E-mail: <Text style={styles.negrito}>{estudante.email}</Text></Text>
+          <Text style={styles.cardTexto}>Curso: <Text style={styles.negrito}>{estudante.curso}</Text></Text>
+
+          <TouchableOpacity 
+            style={styles.botaoRemover} 
+            onPress={() => removerEstudante(estudante.matricula)}
+          >
+            <Text style={styles.textoBotaoRemover}>Remover</Text>
+          </TouchableOpacity>
+        </View>
+      ))}
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flexGrow: 1,
+    padding: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  titulo: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#333',
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 5,
+    color: '#333',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 16,
+    backgroundColor: '#fff',
+    marginBottom: 15,
+  },
+  botaoCadastrar: {
+    backgroundColor: '#0284c7',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  textoBotao: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  subtituloLista: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333',
+  },
+  card: {
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    marginBottom: 15,
+  },
+  cardTexto: {
+    fontSize: 15,
+    color: '#334155',
+    marginBottom: 4,
+  },
+  negrito: {
+    fontWeight: 'bold',
+  },
+  botaoRemover: {
+    backgroundColor: '#dc2626',
+    padding: 8,
+    borderRadius: 6,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  textoBotaoRemover: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+});
