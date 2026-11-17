@@ -1,0 +1,160 @@
+
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
+
+export default function App() {
+  const [nomeProduto, setNomeProduto] = useState('');
+  const [precoOriginal, setPrecoOriginal] = useState('');
+  const [percentualDesconto, setPercentualDesconto] = useState('');
+  const [resultado, setResultado] = useState(null);
+
+  const aplicarDesconto = () => {
+    // 1. Validar preenchimento dos campos
+    if (!nomeProduto.trim()) {
+      Alert.alert('Erro', 'Por favor, informe o nome do produto.');
+      return;
+    }
+    if (!precoOriginal.trim() || !percentualDesconto.trim()) {
+      Alert.alert('Erro', 'Por favor, preencha o preço e o percentual de desconto.');
+      return;
+    }
+
+    // 2. Converter valores para números (substituindo vírgula por ponto)
+    const precoNum = parseFloat(precoOriginal.replace(',', '.'));
+    const descontoNum = parseFloat(percentualDesconto.replace(',', '.'));
+
+    // 3. Validação de preço não negativo
+    if (isNaN(precoNum) || precoNum < 0) {
+      Alert.alert('Erro', 'O preço do produto não pode ser negativo.');
+      return;
+    }
+
+    // 4. Validação de desconto entre 0% e 100%
+    if (isNaN(descontoNum) || descontoNum < 0 || descontoNum > 100) {
+      Alert.alert('Erro', 'O percentual de desconto deve estar entre 0% e 100%.');
+      return;
+    }
+
+    // 5. Cálculos da economia e preço final
+    const economia = precoNum * (descontoNum / 100);
+    const precoFinal = precoNum - economia;
+
+    setResultado({
+      produto: nomeProduto.trim(),
+      economia: economia.toFixed(2),
+      precoFinal: precoFinal.toFixed(2),
+    });
+  };
+
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.titulo}>Calculadora de Desconto</Text>
+
+      <Text style={styles.label}>Nome do Produto:</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Ex: Tênis Esportivo"
+        value={nomeProduto}
+        onChangeText={setNomeProduto}
+      />
+
+      <Text style={styles.label}>Preço Original (R$):</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Ex: 200.00"
+        keyboardType="numeric"
+        value={precoOriginal}
+        onChangeText={setPrecoOriginal}
+      />
+
+      <Text style={styles.label}>Desconto (%):</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Ex: 15"
+        keyboardType="numeric"
+        value={percentualDesconto}
+        onChangeText={setPercentualDesconto}
+      />
+
+      <TouchableOpacity style={styles.botao} onPress={aplicarDesconto}>
+        <Text style={styles.textoBotao}>Aplicar desconto</Text>
+      </TouchableOpacity>
+
+      {resultado !== null && (
+        <View style={styles.resultadoContainer}>
+          <Text style={styles.textoResultado}>
+            Produto: <Text style={styles.negrito}>{resultado.produto}</Text>
+          </Text>
+          <Text style={styles.textoResultado}>
+            Economia: <Text style={styles.destaqueVerde}>R$ {resultado.economia.replace('.', ',')}</Text>
+          </Text>
+          <Text style={styles.textoResultado}>
+            Preço Final: <Text style={styles.negrito}>R$ {resultado.precoFinal.replace('.', ',')}</Text>
+          </Text>
+        </View>
+      )}
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  titulo: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#333',
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 5,
+    color: '#333',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 16,
+    backgroundColor: '#fff',
+    marginBottom: 15,
+  },
+  botao: {
+    backgroundColor: '#0284c7',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  textoBotao: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  resultadoContainer: {
+    marginTop: 25,
+    padding: 15,
+    backgroundColor: '#e0f2fe',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+  },
+  textoResultado: {
+    fontSize: 16,
+    color: '#0369a1',
+    marginBottom: 5,
+  },
+  negrito: {
+    fontWeight: 'bold',
+  },
+  destaqueVerde: {
+    fontWeight: 'bold',
+    color: '#16a34a',
+  },
+});
