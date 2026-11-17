@@ -1,0 +1,189 @@
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
+
+export default function App() {
+  const [temperatura, setTemperatura] = useState('');
+  const [tipoConversao, setTipoConversao] = useState('C_para_F'); // 'C_para_F' ou 'F_para_C'
+  const [resultado, setResultado] = useState(null);
+
+  const converterTemperatura = () => {
+    // Validação de valor vazio
+    if (!temperatura.trim()) {
+      Alert.alert('Erro', 'Por favor, informe a temperatura a ser convertida.');
+      setResultado(null);
+      return;
+    }
+
+    const tempNum = parseFloat(temperatura.replace(',', '.'));
+
+    // Validação de número válido
+    if (isNaN(tempNum)) {
+      Alert.alert('Erro', 'Por favor, introduza um valor numérico válido.');
+      setResultado(null);
+      return;
+    }
+
+    let valorConvertido = 0;
+    let unidadeOriginal = '';
+    let unidadeFinal = '';
+
+    if (tipoConversao === 'C_para_F') {
+      // Fórmula: F = (C * 9/5) + 32
+      valorConvertido = (tempNum * 9) / 5 + 32;
+      unidadeOriginal = '°C';
+      unidadeFinal = '°F';
+    } else {
+      // Fórmula: C = (F - 32) * 5/9
+      valorConvertido = ((tempNum - 32) * 5) / 9;
+      unidadeOriginal = '°F';
+      unidadeFinal = '°C';
+    }
+
+    setResultado({
+      original: tempNum.toFixed(1),
+      convertido: valorConvertido.toFixed(1),
+      unidadeOriginal,
+      unidadeFinal,
+    });
+  };
+
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.titulo}>Conversor de Temperaturas</Text>
+
+      <Text style={styles.label}>Selecione o sentido da conversão:</Text>
+      <View style={styles.seletorContainer}>
+        <TouchableOpacity
+          style={[styles.botaoSeletor, tipoConversao === 'C_para_F' && styles.botaoSeletorAtivo]}
+          onPress={() => setTipoConversao('C_para_F')}
+        >
+          <Text style={[styles.textoSeletor, tipoConversao === 'C_para_F' && styles.textoSeletorAtivo]}>
+            Celsius ➔ Fahrenheit
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.botaoSeletor, tipoConversao === 'F_para_C' && styles.botaoSeletorAtivo]}
+          onPress={() => setTipoConversao('F_para_C')}
+        >
+          <Text style={[styles.textoSeletor, tipoConversao === 'F_para_C' && styles.textoSeletorAtivo]}>
+            Fahrenheit ➔ Celsius
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <Text style={styles.label}>
+        Temperatura em {tipoConversao === 'C_para_F' ? 'Celsius (°C)' : 'Fahrenheit (°F)'}:
+      </Text>
+      <TextInput
+        style={styles.input}
+        placeholder={tipoConversao === 'C_para_F' ? 'Ex: 30' : 'Ex: 86'}
+        keyboardType="numeric"
+        value={temperatura}
+        onChangeText={setTemperatura}
+      />
+
+      <TouchableOpacity style={styles.botaoConverter} onPress={converterTemperatura}>
+        <Text style={styles.textoBotao}>Converter</Text>
+      </TouchableOpacity>
+
+      {resultado !== null && (
+        <View style={styles.resultadoContainer}>
+          <Text style={styles.textoResultado}>Resultado da Conversão:</Text>
+          <Text style={styles.valorResultado}>
+            {resultado.original.replace('.', ',')} {resultado.unidadeOriginal} ={' '}
+            <Text style={styles.negrito}>
+              {resultado.convertido.replace('.', ',')} {resultado.unidadeFinal}
+            </Text>
+          </Text>
+        </View>
+      )}
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  titulo: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#333',
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 8,
+    color: '#333',
+  },
+  seletorContainer: {
+    flexDirection: 'row',
+    marginBottom: 20,
+  },
+  botaoSeletor: {
+    flex: 1,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#0284c7',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    marginHorizontal: 2,
+    borderRadius: 8,
+  },
+  botaoSeletorAtivo: {
+    backgroundColor: '#0284c7',
+  },
+  textoSeletor: {
+    fontSize: 13,
+    color: '#0284c7',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  textoSeletorAtivo: {
+    color: '#fff',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 16,
+    backgroundColor: '#fff',
+    marginBottom: 20,
+  },
+  botaoConverter: {
+    backgroundColor: '#0284c7',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  textoBotao: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  resultadoContainer: {
+    marginTop: 25,
+    padding: 15,
+    backgroundColor: '#e0f2fe',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  textoResultado: {
+    fontSize: 16,
+    color: '#0369a1',
+    marginBottom: 5,
+  },
+  valorResultado: {
+    fontSize: 20,
+    color: '#0369a1',
+  },
+  negrito: {
+    fontWeight: 'bold',
+  },
+});
