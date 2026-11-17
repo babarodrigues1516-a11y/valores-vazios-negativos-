@@ -1,0 +1,199 @@
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, ScrollView, Keyboard } from 'react-native';
+
+export default function App() {
+  const [saldo, setSaldo] = useState(1000.00); // Saldo inicial de R$ 1.000,00[cite: 6]
+  const [valorInput, setValorInput] = useState('');
+  const [extrato, setExtrato] = useState([]);
+
+  const depositar = () => {
+    // Substitui vírgula por ponto para evitar erros de leitura decimal
+    const valor = parseFloat(valorInput.replace(',', '.'));
+
+    if (isNaN(valor) || valor <= 0) {
+      Alert.alert('Erro', 'Por favor, informe um valor de depósito válido e maior que zero.');
+      return;
+    }
+
+    const novoSaldo = saldo + valor;
+    setSaldo(novoSaldo);
+    
+    setExtrato([{ tipo: 'Depósito', valor: valor, saldoApos: novoSaldo }, ...extrato]);
+    setValorInput('');
+    Keyboard.dismiss();
+  };
+
+  const sacar = () => {
+    // 1. Converte explicitamente o texto do input substituindo vírgula por ponto
+    const valor = parseFloat(valorInput.replace(',', '.'));
+
+    // 2. Valida se é um número válido e positivo
+    if (isNaN(valor) || valor <= 0) {
+      Alert.alert('Erro', 'Por favor, informe um valor de saque válido e maior que zero.');
+      return;
+    }
+
+    // 3. Valida rigorosamente se o valor do saque é superior ao saldo atual[cite: 6]
+    // Usamos Number(saldo.toFixed(2)) para evitar pequenos problemas de arredondamento com decimais
+    if (valor > Number(saldo.toFixed(2))) {
+      Alert.alert('Erro', `Saldo insuficiente! O seu saldo atual é R$ ${saldo.toFixed(2).replace('.', ',')}`);
+      return;
+    }
+
+    // 4. Efetua o cálculo do novo saldo
+    const novoSaldo = saldo - valor;
+    setSaldo(novoSaldo);
+
+    // 5. Atualiza o extrato e limpa o campo
+    setExtrato([{ tipo: 'Saque', valor: valor, saldoApos: novoSaldo }, ...extrato]);
+    setValorInput('');
+    Keyboard.dismiss();
+  };
+
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.titulo}>Simulador Bancário</Text>
+
+      <View style={styles.cardSaldo}>
+        <Text style={styles.textoSaldoLabel}>Saldo Atual:</Text>
+        <Text style={styles.textoSaldoValor}>
+          R$ {saldo.toFixed(2).replace('.', ',')}
+        </Text>
+      </View>
+
+      <Text style={styles.label}>Valor da Operação (R$):</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Ex: 150,00"
+        keyboardType="numeric"
+        value={valorInput}
+        onChangeText={setValorInput}
+      />
+
+      <View style={styles.botoesContainer}>
+        <TouchableOpacity style={[styles.botao, styles.botaoDepositar]} onPress={depositar}>
+          <Text style={styles.textoBotao}>Depositar</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={[styles.botao, styles.botaoSacar]} onPress={sacar}>
+          <Text style={styles.textoBotao}>Sacar</Text>
+        </TouchableOpacity>
+      </View>
+
+      {extrato.length > 0 && (
+        <View style={styles.extratoContainer}>
+          <Text style={styles.tituloExtrato}>Últimas Movimentações:</Text>
+          {extrato.map((item, index) => (
+            <View key={index} style={styles.itemExtrato}>
+              <Text style={item.tipo === 'Depósito' ? styles.corDeposito : styles.corSaque}>
+                {item.tipo}: R$ {item.valor.toFixed(2).replace('.', ',')}
+              </Text>
+              <Text style={styles.textoDetalhe}>Saldo: R$ {item.saldoApos.toFixed(2).replace('.', ',')}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  titulo: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#333',
+  },
+  cardSaldo: {
+    backgroundColor: '#0284c7',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  textoSaldoLabel: {
+    fontSize: 16,
+    color: '#e0f2fe',
+  },
+  textoSaldoValor: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginTop: 5,
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 5,
+    color: '#333',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 16,
+    backgroundColor: '#fff',
+    marginBottom: 15,
+  },
+  botoesContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  botao: {
+    flex: 1,
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginHorizontal: 5,
+  },
+  botaoDepositar: {
+    backgroundColor: '#16a34a',
+  },
+  botaoSacar: {
+    backgroundColor: '#dc2626',
+  },
+  textoBotao: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  extratoContainer: {
+    marginTop: 25,
+    padding: 15,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  tituloExtrato: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333',
+  },
+  itemExtrato: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  corDeposito: {
+    fontWeight: 'bold',
+    color: '#16a34a',
+  },
+  corSaque: {
+    fontWeight: 'bold',
+    color: '#dc2626',
+  },
+  textoDetalhe: {
+    color: '#64748b',
+  },
+});
